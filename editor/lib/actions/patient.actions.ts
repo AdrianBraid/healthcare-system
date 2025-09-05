@@ -10,7 +10,6 @@ type CreateUserParams = { name: string; email: string; phone?: string };
 
 export async function createUser(user: CreateUserParams) {
   try {
-    // Appwrite server SDK: users.create(userId, email?, phone?, password?, name?)
     const newUser = await users.create(
       ID.unique(),
       user.email,
@@ -20,7 +19,6 @@ export async function createUser(user: CreateUserParams) {
     );
     return newUser;
   } catch (err: any) {
-    // If already exists, fetch by email
     if (err?.code === 409) {
       const existing = await users.list([Query.equal("email", [user.email])]);
       return existing.users[0];
@@ -81,17 +79,25 @@ export const registerPatient = async ({
 // GET PATIENT
 export const getPatient = async (userId: string) => {
   try {
-    const patients = await databases.listDocuments(
+    const res = await databases.listDocuments(
       DATABASE_ID!,
       PATIENT_COLLECTION_ID!,
       [Query.equal("userId", [userId])]
     );
+    if (res.total > 0) return parseStringify(res.documents[0]);
 
-    return parseStringify(patients.documents[0]);
-  } catch (error) {
-    console.error(
-      "An error occurred while retrieving the patient details:",
-      error
+    const all = await databases.listDocuments(
+      DATABASE_ID!,
+      PATIENT_COLLECTION_ID!
     );
+    const match =
+      all.documents.find((d: any) => d.userId === userId) ||
+      all.documents.find((d: any) => d.UserId === userId) ||
+      all.documents.find((d: any) => d.userID === userId);
+
+    return match ? parseStringify(match) : null;
+  } catch (error) {
+    console.error("getPatient error:", error);
+    return null;
   }
 };
