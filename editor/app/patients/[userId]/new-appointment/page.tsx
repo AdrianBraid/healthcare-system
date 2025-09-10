@@ -1,9 +1,13 @@
 import Image from "next/image";
+import { unstable_noStore as noStore } from "next/cache";
+
+export const revalidate = 0;
 
 import { AppointmentForm } from "@/components/forms/AppointmentForm";
 import { getPatient } from "@/lib/actions/patient.actions";
 
 const Appointment = async ({ params: { userId } }: SearchParamProps) => {
+  noStore(); // ensure fresh DB read (no cache)
   const patient = await getPatient(userId);
 
   return (
