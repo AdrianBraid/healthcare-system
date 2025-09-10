@@ -42,3 +42,6 @@ next-env.d.ts
 
 # OS-specific junk
 Thumbs.db
+
+# Sentry Config File
+.env.sentry-build-plugin
